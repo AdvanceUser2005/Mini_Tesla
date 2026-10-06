@@ -1,8 +1,0 @@
-source;share/tesla_description/hook/cmake_prefix_path.ps1
-source;share/tesla_description/hook/cmake_prefix_path.dsv
-source;share/tesla_description/hook/cmake_prefix_path.sh
-source;share/tesla_description/local_setup.bash
-source;share/tesla_description/local_setup.dsv
-source;share/tesla_description/local_setup.ps1
-source;share/tesla_description/local_setup.sh
-source;share/tesla_description/local_setup.zsh
