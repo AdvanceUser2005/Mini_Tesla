@@ -52,7 +52,7 @@ Launch arguments (`sim.launch.py`):
 | `/tof/<name>/range` | `sensor_msgs/Range` | nearest beam, like the real VL53L1X (from `tof_to_range.py`) |
 | `/radar/front/points` | `sensor_msgs/PointCloud2` | also `left`, `right`, `rear` when enabled |
 | `/oak/rgb/image_raw`, `/oak/rgb/camera_info` | `Image`, `CameraInfo` | 640x480 @ 30 Hz |
-| `/oak/depth/image_raw`, `/oak/points` | `Image` (32FC1), `PointCloud2` | depth 0.2-10 m |
+| `/oak/depth/image_raw`, `/oak/points` | `Image` (32FC1), `PointCloud2` | depth 0.2-10 m; points (XYZRGB) built by `depth_image_proc` |
 | `/oak/imu` | `sensor_msgs/Imu` | 200 Hz |
 | `/clock` | `rosgraph_msgs/Clock` | everything runs with `use_sim_time` |
 
