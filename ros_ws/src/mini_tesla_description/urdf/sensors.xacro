@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+<!--
+  Sensors of the 10C4I. Every sensor frame looks along its own +X (REP-103), except the camera's
+  optical frame (+Z forward, REP-103 optical convention).
+
+  Gazebo has no ToF or mmWave radar sensor, so:
+    VL53L1X ToF   -> gpu_lidar: 27 deg fan, 5 beams, 0.04-4 m, 30 Hz. scripts/tof_to_range.py turns each
+                     scan into a sensor_msgs/Range (nearest beam), like the real sensor's single distance.
+    IWR6843 radar -> gpu_lidar: 120 x 40 deg, 0.1-10 m, 10 Hz, published as a PointCloud2 (no Doppler).
+    OAK-D Lite    -> rgbd_camera 640x480 @ 30 Hz (73 deg HFOV) + its BMI270 IMU @ 200 Hz.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:property name="sensor_z" value="0.023"/>   <!-- all ToF + radar centres, 44 mm above the floor -->
+
+  <!-- ===================== VL53L1X ToF ===================== -->
+  <xacro:macro name="tof" params="name x y yaw">
+    <joint name="tof_${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="tof_${name}_link"/>
+      <origin xyz="${x} ${y} ${sensor_z}" rpy="0 0 ${yaw}"/>
+    </joint>
+    <link name="tof_${name}_link"/>
+    <gazebo reference="tof_${name}_link">
+      <sensor name="tof_${name}" type="gpu_lidar">
+        <gz_frame_id>tof_${name}_link</gz_frame_id>
+        <topic>/tof/${name}/scan</topic>
+        <update_rate>30</update_rate>
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>5</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.2356</min_angle>
+              <max_angle>0.2356</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>1</samples>
+              <resolution>1</resolution>
+              <min_angle>0</min_angle>
+              <max_angle>0</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.04</min>
+            <max>4.0</max>
+            <resolution>0.001</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.01</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- bumpers: front and rear pairs at y = +-84 mm, board face 184 mm from centre -->
+  <xacro:tof name="front_left"  x="0.18415"  y="0.084"   yaw="0"/>
+  <xacro:tof name="front_right" x="0.18415"  y="-0.084"  yaw="0"/>
+  <xacro:tof name="rear_left"   x="-0.18415" y="0.084"   yaw="${pi}"/>
+  <xacro:tof name="rear_right"  x="-0.18415" y="-0.084"  yaw="${pi}"/>
+  <!-- side extensions: x = +-78 mm, board face at y = +-145.6 mm -->
+  <xacro:tof name="left_front"  x="0.078"    y="0.1456"  yaw="${pi/2}"/>
+  <xacro:tof name="left_rear"   x="-0.078"   y="0.1456"  yaw="${pi/2}"/>
+  <xacro:tof name="right_front" x="0.078"    y="-0.1456" yaw="${-pi/2}"/>
+  <xacro:tof name="right_rear"  x="-0.078"   y="-0.1456" yaw="${-pi/2}"/>
+
+  <!-- ===================== TI IWR6843AOPEVM radar ===================== -->
+  <xacro:macro name="radar" params="name x y yaw">
+    <joint name="radar_${name}_joint" type="fixed">
+      <parent link="base_link"/>
+      <child link="radar_${name}_link"/>
+      <origin xyz="${x} ${y} ${sensor_z}" rpy="0 0 ${yaw}"/>
+    </joint>
+    <link name="radar_${name}_link"/>
+    <gazebo reference="radar_${name}_link">
+      <sensor name="radar_${name}" type="gpu_lidar">
+        <gz_frame_id>radar_${name}_link</gz_frame_id>
+        <topic>/radar/${name}/scan</topic>
+        <update_rate>10</update_rate>
+        <always_on>true</always_on>
+        <visualize>false</visualize>
+        <lidar>
+          <scan>
+            <horizontal>
+              <samples>64</samples>
+              <resolution>1</resolution>
+              <min_angle>-1.0472</min_angle>
+              <max_angle>1.0472</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>8</samples>
+              <resolution>1</resolution>
+              <min_angle>-0.3491</min_angle>
+              <max_angle>0.3491</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.10</min>
+            <max>10.0</max>
+            <resolution>0.04</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.03</stddev>
+          </noise>
+        </lidar>
+      </sensor>
+    </gazebo>
+  </xacro:macro>
+
+  <!-- front: antenna (chip) centre on the bumper -->
+  <xacro:radar name="front" x="0.1920" y="-0.0201" yaw="0"/>
+  <xacro:if value="$(arg side_radars)">
+    <xacro:radar name="left"  x="0.0233"  y="0.15345"  yaw="${pi/2}"/>
+    <xacro:radar name="right" x="-0.0233" y="-0.15345" yaw="${-pi/2}"/>
+  </xacro:if>
+  <xacro:if value="$(arg rear_radar)">
+    <xacro:radar name="rear" x="-0.1920" y="0.0201" yaw="${pi}"/>
+  </xacro:if>
+
+  <!-- ===================== OAK-D Lite ===================== -->
+  <!-- camera_link = centre of the camera's front face (x 188 mm, z 75 mm above the chassis underside) -->
+  <joint name="oak_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="oak_link"/>
+    <origin xyz="0.188 0 0.075" rpy="0 0 0"/>
+  </joint>
+  <link name="oak_link">
+    <visual>
+      <geometry><mesh filename="file://${pkg}/meshes/oak_d_lite.stl" scale="${mesh_scale}"/></geometry>
+      <material name="black"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.00875 0 0" rpy="0 0 0"/>
+      <geometry><box size="0.0175 0.091 0.028"/></geometry>
+    </collision>
+    <xacro:box_inertial m="${m_camera}" x="0.0175" y="0.091" z="0.028">
+      <origin xyz="-0.00875 0 0" rpy="0 0 0"/>
+    </xacro:box_inertial>
+  </link>
+
+  <joint name="oak_optical_joint" type="fixed">
+    <parent link="oak_link"/>
+    <child link="oak_optical_frame"/>
+    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+  </joint>
+  <link name="oak_optical_frame"/>
+
+  <joint name="oak_imu_joint" type="fixed">
+    <parent link="oak_link"/>
+    <child link="oak_imu_link"/>
+    <origin xyz="-0.009 0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="oak_imu_link"/>
+
+  <gazebo reference="oak_link">
+    <sensor name="oak_rgbd" type="rgbd_camera">
+      <gz_frame_id>oak_optical_frame</gz_frame_id>
+      <topic>/oak/rgbd</topic>
+      <update_rate>30</update_rate>
+      <always_on>true</always_on>
+      <visualize>true</visualize>
+      <camera>
+        <horizontal_fov>1.274</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.05</near>
+          <far>15.0</far>
+        </clip>
+        <depth_camera>
+          <clip>
+            <near>0.20</near>
+            <far>10.0</far>
+          </clip>
+        </depth_camera>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.005</stddev>
+        </noise>
+      </camera>
+    </sensor>
+  </gazebo>
+
+  <gazebo reference="oak_imu_link">
+    <sensor name="oak_imu" type="imu">
+      <gz_frame_id>oak_imu_link</gz_frame_id>
+      <topic>/oak/imu</topic>
+      <update_rate>200</update_rate>
+      <always_on>true</always_on>
+      <imu>
+        <angular_velocity>
+          <x><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0</mean><stddev>0.002</stddev></noise></z>
+        </angular_velocity>
+        <linear_acceleration>
+          <x><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></x>
+          <y><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></y>
+          <z><noise type="gaussian"><mean>0</mean><stddev>0.02</stddev></noise></z>
+        </linear_acceleration>
+      </imu>
+    </sensor>
+  </gazebo>
+
+</robot>
