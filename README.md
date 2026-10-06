@@ -1,210 +1,666 @@
-# Mini Tesla — Autonomous Mecanum Robot Platform
+# Mini Tesla — Autonomous Regenerative EV Robot Platform
 
-## Members
-Daksh Gupta, Computer Engineering Student (2028)
+> A custom four-wheel robotic EV platform for regenerative braking, autonomous navigation, fast obstacle response, and full-stack robotics development.
+
+## Project Lead
+
+**Daksh Gupta**  
+Computer Engineering — Controls, Robotics & Autonomy  
+Virginia Tech  
 mailtodaksh@vt.edu
 
-## Mentor
-MENTOR NAME HERE
-
-## Current Status
-IN PROGRESS
-
-## Project Overview
-
-The Mini Tesla is an autonomous omnidirectional robotic platform built on a four-wheel mecanum drivetrain, capable of moving in any direction — forward, lateral, diagonal, and rotational — without needing to reorient itself. The platform is designed as a full-stack research and engineering vehicle that bridges mechanical design, embedded systems, and autonomous robotics software.
-
-At the mechanical core, the robot features a custom-built two-ratio gearbox designed and fabricated in-house, enabling adaptive gear shifting between high-speed flat terrain mode and high-torque incline traversal mode. The drivetrain uses four Pololu 37D bare DC motors (24V, 64 CPR encoder, no internal gearbox) feeding directly into the custom transmission — maximizing regenerative braking efficiency by eliminating the energy loss of a factory gearbox. Custom spring-damper shock absorbers are designed and tuned for outdoor terrain traversal, and a hydraulic braking circuit — engineered from first principles including master/slave cylinder sizing and fluid bleeding — provides active braking and hill-hold capability.
-
-The autonomy stack runs on an NVIDIA Jetson Orin Nano Super (67 TOPS) executing ROS 2, with a Teensy 4.1 microcontroller handling real-time motor control, PID velocity loops, encoder feedback, and actuator commands over CAN/serial. Perception is handled by an Intel RealSense D435 RGB-D camera and an RPLIDAR A1 2D LiDAR, enabling SLAM-based mapping, Nav2 autonomous navigation, and an Automatic Emergency Braking (AEB) system via depth threshold detection. An AI pipeline running YOLO on the Jetson GPU enables object detection and person-following behavior. The robot also supports WiFi and Bluetooth remote control for manual override alongside full autonomous operation.
-
-A digital twin of the platform is built in NVIDIA Isaac Sim, enabling hardware-in-the-loop (HIL) simulation and algorithm validation before deployment to the physical robot. The project spans three semesters — Spring, Summer, and Fall 2026 — with three defined milestones culminating in a full autonomous demonstration.
-
-## Educational Value Added
-
-This project develops hands-on expertise across six engineering disciplines simultaneously, making it one of the most comprehensive student robotics projects in scope:
-
-**Mechanical Design & Manufacturing** — Students learn to design a multi-ratio planetary gearbox from scratch, understanding gear ratio theory, torque multiplication, and how automotive transmissions work at a fundamental level. Custom shock absorbers are designed using spring-damper physics, spring rate selection (k = F/x), and damping coefficient tuning. A hydraulic brake circuit is engineered from Pascal's Law up — including master/slave cylinder bore sizing, brake fluid selection, and system bleeding technique. FEA (Finite Element Analysis) is used to validate structural components before fabrication.
-
-**Embedded Systems & Real-Time Control** — The Teensy 4.1 runs deterministic real-time firmware handling four simultaneous quadrature encoder interrupts, four independent PID velocity loops, PWM motor command output, servo control for the gear selector, and solenoid actuation for the hydraulic brake — all at 1 kHz without timing conflicts. Students learn CAN bus communication, hardware timer configuration, and interrupt-driven architecture.
-
-**Robotics Software (ROS 2)** — The full ROS 2 stack is implemented from scratch: mecanum inverse kinematics node, wheel odometry, IMU-fused localization, SLAM mapping with RPLIDAR, and Nav2 goal-directed navigation with dynamic obstacle avoidance. Students learn node architecture, topic/service communication, and real-time sensor fusion.
-
-**AI & Computer Vision** — YOLO object detection and person re-identification pipelines run on the Jetson GPU for human-following behavior. The AEB system uses raw RealSense depth data — not AI — for sub-25ms obstacle detection latency, teaching students the difference between classification tasks and safety-critical sensor pipelines.
-
-**Simulation & Digital Twin** — NVIDIA Isaac Sim is used to build a full digital twin of the robot including geometry, sensors, and drivetrain physics. Students learn hardware-in-the-loop testing workflows and sim-to-real transfer techniques used in industry robotics development.
-
-**Communications & Controls** — WiFi and Bluetooth modules provide remote control capability alongside the autonomous stack. Students implement mode-switching logic, teleop integration in ROS 2, emergency stop handling, and failsafe behavior.
-
-## Tasks
-
-### Spring 2026 (Now → May 13)
-- [ ] Finalize BOM and place all component orders (motors, MCU, sensors, battery, structural hardware)
-- [ ] CAD — Full chassis design in SolidWorks/Fusion 360
-- [ ] CAD — Custom 2-ratio gearbox (planetary stages, selector collar, housing)
-- [ ] CAD — Shock absorber assemblies (spring-damper bodies, mount points)
-- [ ] CAD — Hydraulic brake system (caliper, rotor, master cylinder, lines)
-- [ ] FEA — Structural analysis on chassis and gearbox housing
-- [ ] Receive and inventory all ordered components
-- [ ] Begin manufacturing drawings for CNC/3D print parts
-
-### Summer 2026 (May 26 → July 6)
-- [ ] 3D print and CNC machine all custom parts (gearbox bodies, shock housings, brake calipers)
-- [ ] Full mechanical assembly — chassis, wheels, gearboxes, shock absorbers
-- [ ] Wire all electronics — Teensy, motor drivers, IMU, LiDAR, RealSense, AI PC, WiFi/BT module
-- [ ] Flash Teensy firmware — encoder interrupts, PID loops, CAN comms
-- [ ] Validate mecanum kinematics — test all four motion vectors
-- [ ] Test power regeneration — verify BTS7960 back-EMF current return
-- [ ] Test gearbox shifting — servo-actuated selector under load
-- [ ] Test hydraulic brakes — caliper engagement, hill-hold force
-- [ ] Test remote control — WiFi/BT manual override
-- [ ] Isaac Sim — build digital twin, run full-scale simulation tests
-- [ ] **MILESTONE #2 target: June 13** — Assembly complete, all wiring done, basic subsystem testing done
-
-### Fall 2026 (Aug 24 → Dec 16)
-- [ ] Camera integration — RealSense depth layer into Nav2 costmap
-- [ ] AEB system — depth threshold node with real-time priority, direct Teensy serial path
-- [ ] YOLO object detection pipeline on Jetson GPU
-- [ ] Person-following behavior node
-- [ ] Full Nav2 autonomous navigation on real hardware
-- [ ] SLAM map generation and localization validation
-- [ ] Full system integration testing — all subsystems running simultaneously
-- [ ] Documentation — architecture writeup, wiring diagrams, software README
-- [ ] **MILESTONE #3 target: Dec 16** — Full autonomous run demonstration
-
-## Design Decisions
-
-**Motor Selection — Pololu 37D Bare Motor (24V, no internal gearbox)**
-Chosen over motors with factory gearboxes specifically because the custom gearbox IS the project. Using a bare motor means the only reduction stage is our custom 2-ratio transmission, which maximizes back-drive efficiency for regenerative braking (no factory gearbox eating energy in reverse) and gives us full control over gear ratios. The 64 CPR encoder provides tight velocity feedback for PID.
-
-**Motor Driver — Cytron MDD10A × 2**
-Chosen over BTS7960 because it is purpose-built for the 10-12A peak current range of our motors, includes proper overcurrent/overheat protection, has cleaner PWM response, and covers two motors per board — reducing wiring complexity from four boards to two. Supports regenerative braking current routing.
-
-**Microcontroller — Teensy 4.1**
-600 MHz ARM Cortex-M7 provides sufficient headroom to run four encoder interrupts, four PID loops, CAN comms to Jetson, servo PWM for gear selector, and hydraulic brake solenoid control simultaneously without timing conflicts. Native CAN bus and solid micro-ROS support for ROS 2 integration via serial.
-
-**Perception — RealSense D435 + RPLIDAR A1 (no OAK-D)**
-LiDAR handles 2D SLAM with superior reliability on blank walls and in low light. RealSense adds 3D depth for AEB and close-range obstacle detection. The OAK-D was evaluated and dropped — once LiDAR is in the stack, OAK-D has no unique role. The combo of RealSense + LiDAR outperforms OAK-D + LiDAR in both indoor reliability and outdoor sunlight conditions.
-
-**AEB Design — Depth Threshold, Not Image Recognition**
-AEB latency requirement is sub-25ms. Neural network inference adds 50-120ms before a brake signal is even sent. The AEB node reads raw RealSense depth frames, checks the minimum depth value in a forward-facing region of interest, and fires directly to the Teensy over a dedicated high-priority serial path — bypassing the ROS nav stack entirely. Total pipeline latency: ~15-20ms.
-
-**Gearbox — Per-Wheel (not shared axle)**
-Each mecanum wheel must spin at an independently controlled speed. Any mechanical coupling between two wheels (e.g. shared differential) destroys omnidirectional capability. All four gearboxes shift simultaneously via a single servo command from Teensy, maintaining synchronized gear state across all wheels.
-
-**No AK60-6 Actuators**
-CubeMars AK60-6 was evaluated — excellent motors with integrated FOC and CAN — but at ~$220/unit ($880 for 4 wheels) they consume over half the total budget before any other component is purchased. The Pololu 37D + custom gearbox achieves the educational objectives of the project at a fraction of the cost.
-
-## Design Misc
-
-- **Gearbox Ratios**: High gear 1:1 (flat terrain, max speed), Low gear 2:1 (inclines, max torque). With Pololu 37D at 24V, low gear provides approximately 2× the climbing force.
-- **Shock Absorber Tuning**: Spring rate selected based on estimated robot mass ~10-12 kg. Rebound damping oil viscosity to be tuned empirically during summer assembly phase.
-- **Hydraulic Brake Hold Force**: Sized to hold robot stationary on 20° incline at full load. Master cylinder bore sized for solenoid actuation force available from Teensy-controlled valve.
-- **Regenerative Braking Efficiency**: With bare motor (no internal gearbox) and 1:1 or 2:1 custom transmission, estimated 45-55% energy recovery vs ~12% with a factory 50:1 gearbox.
-- **Stereo LiDAR**: If additional 3D mapping capability is needed beyond RealSense, stereo depth from RealSense is fed into RTAB-Map as a second mapping layer. No OAK-D needed.
-- **WiFi/BT Remote Control**: Implemented as a ROS 2 teleop node. Autonomous mode and teleop mode are mutually exclusive with a hardware-level mode switch. Emergency stop works in both modes.
-
-## Steps for Documenting Your Design Process
-
-1. **CAD Files** — All SolidWorks/Fusion 360 files version-controlled in project GitHub repo under `/cad`. Export STLs and STEP files for each manufactured part alongside manufacturing drawings (PDF).
-2. **FEA Reports** — Document load cases, boundary conditions, mesh parameters, and safety factors for each analyzed component. Export simulation screenshots and summary tables to `/docs/fea`.
-3. **Wiring Diagrams** — Full schematic in KiCad or Fritzing showing every electrical connection: Teensy pinout, motor driver wiring, sensor connections, power distribution. Stored in `/docs/electrical`.
-4. **Firmware** — Teensy firmware in `/firmware` with inline comments explaining each PID parameter, CAN message format, and interrupt configuration. Include a README with flash instructions.
-5. **ROS 2 Packages** — Each subsystem (kinematics, navigation, perception, AEB) is its own ROS 2 package in `/ros2_ws/src`. Include launch files and parameter YAML files.
-6. **Test Logs** — After each milestone, document test results: motor RPM vs command, PID step response plots, LiDAR scan accuracy, navigation success rate. Stored in `/docs/test_logs`.
-7. **Weekly Log** — Update the Log section of this document every week with what was completed, what blocked progress, and what is planned next.
-
-## BOM + Component Cost
-
-| Component | Category | Qty | Unit Cost | Total |
-|---|---|---|---|---|
-| NVIDIA Jetson Orin Nano Super (8GB) | Compute | 1 | $249 | $249 |
-| Teensy 4.1 Microcontroller | Embedded Control | 1 | $30 | $30 |
-| Pololu 37D Bare DC Motor (24V, 64 CPR Encoder) | Drivetrain | 4 | $37.50 | $150 |
-| Custom CNC Gearbox — Aluminum, 2-ratio (materials est.) | Transmission | 4 | ~$40 | ~$160 |
-| Servo Motor (Gear Selector Actuator) | Transmission | 1 | $30 | $30 |
-| Cytron MDD10A Dual Motor Driver | Power Electronics | 2 | $30 | $60 |
-| Intel RealSense D435 RGB-D Camera | Perception | 1 | $399 | $399 |
-| RPLIDAR A1 (2D LiDAR) | Perception | 1 | $100 | $100 |
-| IMU — BNO055 | Sensing | 1 | $25 | $25 |
-| WiFi / Bluetooth Module | Communications | 1 | $25 | $25 |
-| LiPo Battery Pack (22.2V, 10Ah) | Power | 1 | $150 | $150 |
-| Power Management / BMS Board | Power | 1 | $80 | $80 |
-| Robot Chassis (Aluminum Frame, Final Stage) | Structure | 1 | $180 | $180 |
-| Wiring, Connectors, Fasteners, Misc. Hardware | Misc. | — | — | $120 |
-| **TOTAL** | | | | **~$1,758** |
-
-> Custom gearbox cost is a materials estimate only. Machining is done in-house using university shop access. ROS 2, NVIDIA Isaac Sim, and all software tools are free / open-source.
-
-## Timeline
-
-### Spring 2026 — Now → May 13
-**Goal**: All CAD complete, all parts ordered and received, FEA validated
-
-| Week | Focus |
-|---|---|
-| Now – Week 2 | Finalize BOM, place all component orders |
-| Week 2 – 4 | CAD — Chassis, gearbox, shock absorbers, hydraulic brakes |
-| Week 4 – 5 | FEA analysis on chassis and gearbox housing |
-| Week 5 – 6 | Manufacturing drawings, send files to shop / begin 3D printing |
-| **May 13** | **🏁 MILESTONE #1 — Chassis (physical), Wheels (mounted), Gearbox (CAD), Brakes (CAD), Shockers (CAD)** |
+**Status:** In Progress — Mechanical CAD / Milestone 1  
+**Last Updated:** October 5, 2026
 
 ---
 
-### Summer 2026 — May 26 → July 6
-**Goal**: Fully assembled and wired robot with all subsystems individually tested
+## Overview
 
-| Week | Focus |
-|---|---|
-| Week 1 | 3D print and CNC all custom parts |
-| Week 2 | Full mechanical assembly — chassis, gearboxes, shock absorbers, wheels |
-| Week 3 | All electronics wiring — Teensy, motor drivers, LiDAR, RealSense, IMU, WiFi/BT, AI PC |
-| Week 4 | Teensy firmware — encoders, PID, CAN/serial, gear selector, brake solenoid |
-| Week 5 | Testing — mecanum kinematics, regen braking, gearbox shifting, hydraulic brakes |
-| Week 6 | Remote control integration + Isaac Sim full-scale simulation |
-| **June 13** | **🏁 MILESTONE #2 — Full assembly complete, all wiring done, gearbox + brakes + remote tested** |
+**Mini Tesla** is a custom electric robotic platform being developed to combine mechanical design, embedded control, perception, autonomy, and regenerative braking in one system.
 
-> *Break period: July 6 – August 24*
+The project is currently focused on building a mechanically sound and modular four-wheel chassis around the **real purchased components** before full electronics and autonomy integration.
+
+The current architecture uses:
+
+- **Pololu 37D 20:1 gearmotors with encoders**
+- **Cytron bidirectional motor drivers**
+- **Teensy 4.1** for low-level real-time control
+- **ASUS Zephyrus G14** as the primary development/onboard compute platform
+- **OAK-D Lite** stereo/depth camera
+- **8× Time-of-Flight sensors** for close-range perimeter sensing
+- **IMU + wheel odometry** for state estimation
+- **TI IWR6843AOPEVM** mmWave radar as the initial front radar
+- **ROS 2 Jazzy**, Gazebo Harmonic, and NVIDIA Isaac Sim for autonomy and simulation
+
+One of the central goals is to experimentally study **regenerative braking on a small robotic EV**. During controlled deceleration, the drivetrain will be instrumented to measure generated voltage, current, recovered energy, and stopping behavior.
+
+> Features listed as goals are not presented as completed functionality. The robot is currently in the mechanical design and prototype stage.
 
 ---
 
-### Fall 2026 — Aug 24 → Dec 16
-**Goal**: Full autonomous robot with AI perception, SLAM navigation, and AEB — demonstrated live
+# Main Goals
 
-| Week | Focus |
-|---|---|
-| Week 1 – 2 | Camera integration — RealSense depth into Nav2 costmap + SLAM |
-| Week 3 – 4 | AEB system — depth threshold node, dedicated serial path to Teensy |
-| Week 5 – 6 | AI pipeline — YOLO object detection + person following on Jetson |
-| Week 7 – 8 | Full ROS 2 stack on hardware — Nav2, localization, sensor fusion |
-| Week 9 – 10 | System integration — all subsystems running simultaneously |
-| Week 11 – 12 | Testing, debugging, performance tuning |
-| Week 13 – 14 | Documentation — architecture writeup, wiring diagrams, software README |
-| **Dec 16** | **🏁 MILESTONE #3 — Full autonomous demo: SLAM map, navigate to goal, detect person, AEB trigger** |
+The final platform is intended to support:
 
-## Useful Links
+- Autonomous indoor and outdoor navigation
+- Fast obstacle detection and emergency deceleration
+- Regenerative braking and energy-recovery measurement
+- Stereo depth perception and visual SLAM
+- Wheel-encoder + IMU sensor fusion
+- Near-field obstacle detection around the full chassis
+- Front mmWave radar sensing
+- ROS 2 navigation and behavior logic
+- Real-time motor control through Teensy 4.1
+- Teleoperation and emergency override
+- Gazebo / Isaac Sim digital twin development
+- Modular and serviceable mechanical construction
 
-- [Pololu 37D Metal Gearmotor (Bare, 24V, Encoder)](https://www.pololu.com/category/116/37d-mm-metal-gearmotors)
-- [Cytron MDD10A Dual Motor Driver](https://www.cytron.io/p-10amp-5v-30v-dc-motor-driver-2-channels)
-- [Teensy 4.1 — PJRC](https://www.pjrc.com/store/teensy41.html)
-- [NVIDIA Jetson Orin Nano Super Developer Kit](https://developer.nvidia.com/embedded/jetson-orin-nano-developer-kit)
-- [Intel RealSense D435](https://www.intelrealsense.com/depth-camera-d435/)
-- [RPLIDAR A1](https://www.slamtec.com/en/Lidar/A1)
-- [ROS 2 Humble Documentation](https://docs.ros.org/en/humble/)
+A target demonstration is an indoor test where an object such as a football enters the robot's path, the robot detects it, decelerates rapidly, and records the electrical energy recovered during the braking event.
+
+---
+
+# System Architecture
+
+## High-Level Compute — ASUS Zephyrus G14
+
+The current chassis is being designed with enough top-deck space to carry the laptop with the lid closed.
+
+The laptop will handle tasks such as:
+
+- ROS 2
+- OAK-D processing
+- VSLAM / localization
+- Sensor fusion
+- Navigation
+- Object detection
+- Radar processing
+- Data logging
+- Simulation and development tools
+
+A dedicated Jetson may be considered later, but it is not required for the current mechanical prototype.
+
+## Low-Level Control — Teensy 4.1
+
+The Teensy handles timing-critical functions including:
+
+- Motor commands
+- Encoder acquisition
+- Wheel-speed estimation
+- PID velocity control
+- Emergency braking commands
+- Drivetrain telemetry
+- Communication with the high-level computer
+
+Timing-critical motor control should remain independent of high-level perception and navigation workloads.
+
+---
+
+# Drivetrain & Regenerative Braking
+
+## Motors
+
+Current drivetrain hardware is based on:
+
+- **4× Pololu 37D gearmotors**
+- **20:1 reduction**
+- Integrated quadrature encoders
+
+The exact SKU must match the purchased component and supplied CAD model.
+
+## Current Drive / Regen Concept
+
+The current concept separates the front and rear drivetrain roles:
+
+- **Rear pair:** primary propulsion
+- **Front pair:** regenerative-braking / energy-recovery experimentation
+
+The final electrical topology will be validated experimentally before claiming that recovered energy can safely be returned to the battery.
+
+### Regen Tests
+
+The system should measure:
+
+- Motor back-EMF during deceleration
+- Regenerated voltage
+- Regenerated current
+- Recovered energy per braking event
+- Braking distance and response time
+- Battery / DC-bus voltage rise
+- Thermal behavior
+- Repeatability
+
+A bidirectional motor driver alone does **not** guarantee safe battery regeneration. The driver, battery, BMS, wiring, and protection circuitry must all be verified for reverse-current operation.
+
+---
+
+# Perception & Localization
+
+## OAK-D Lite
+
+The OAK-D Lite is the current front stereo/depth camera choice.
+
+Planned uses:
+
+- Stereo depth
+- Visual odometry / VSLAM
+- Front obstacle detection
+- Object/person detection
+- Navigation perception
+
+## Time-of-Flight Sensors
+
+Current layout target:
+
+| Side | Quantity |
+|---|---:|
+| Front | 2 |
+| Rear | 2 |
+| Left | 2 |
+| Right | 2 |
+| **Total** | **8** |
+
+### ToF Placement Rule
+
+The sensing cone must remain clear of the wheels, tires, motor mounts, chassis walls, and neighboring sensors.
+
+Do **not** place a ToF sensor directly beside a wheel if the wheel blocks one side of its field of view.
+
+Sensor brackets should be removable and adjustable so height and angle can be changed during testing.
+
+## IMU + Wheel Odometry
+
+Encoder odometry will be fused with IMU measurements for motion estimation.
+
+The final IMU model is still subject to BOM confirmation.
+
+## mmWave Radar
+
+Preferred radar: **TI IWR6843AOPEVM**
+
+Initial configuration:
+
+- 1× front-facing radar
+- Chassis architecture should allow additional radar modules later if testing justifies them
+
+Possible uses include longer-range obstacle awareness, motion detection, and relative radial velocity.
+
+---
+
+# Mechanical CAD Requirements
+
+These requirements are mandatory for the current chassis design.
+
+## 1. Purchased Components Are Fixed Geometry
+
+All supplied STEP/CAD models, drawings, dimensions, and purchased components are treated as fixed geometry.
+
+Custom parts must be designed around them.
+
+Do not:
+
+- Resize purchased components
+- Change connector locations
+- Approximate mounting patterns when dimensions are available
+- Invent dimensions
+- Modify a purchased component to make the assembly easier
+
+## 2. Modular Chassis
+
+The chassis must be split into printable structural sections because the complete base may exceed the printer build volume.
+
+Requirements:
+
+- Replaceable chassis sections
+- Reinforced joints
+- Repeatable alignment between sections
+- Overlapping/interlocking joints where useful
+- No weak butt joints carrying major drivetrain loads
+
+## 3. Standard Fastener — M2.5
+
+Use M2.5 hardware throughout where practical:
+
+- M2.5 machine screws
+- Heat-set inserts for repeatedly serviced joints
+- Through-holes + nuts where appropriate
+
+Fasteners must have sufficient surrounding material and must remain accessible after assembly.
+
+## 4. Separate Motor Mounts
+
+Motor mounts should be separate removable parts rather than being permanently printed into the chassis.
+
+Benefits:
+
+- Easier motor replacement
+- Easier drivetrain revisions
+- Better printing orientation
+- Local reinforcement
+- Less risk of reprinting the full chassis
+
+The mount must use the real motor geometry and mounting pattern.
+
+## 5. Wheel Adapters / Hubs
+
+Wheel interfaces must:
+
+- Match the real motor/gearbox output shaft
+- Resist torque without slipping
+- Maintain wheel concentricity
+- Minimize unnecessary cantilever loading
+- Allow the wheel to be removed independently
+
+## 6. Structural Reinforcement
+
+High-load regions should use ribs, gussets, boxed sections, large-radius fillets, or local thickness increases around:
+
+- Motor mounts
+- Wheel interfaces
+- Chassis section joints
+- Battery mounts
+- Laptop deck supports
+
+Avoid unnecessary solid mass when geometry can provide stiffness more efficiently.
+
+## 7. Electronics Space
+
+Reserve accessible mounting volume for:
+
+- Teensy 4.1
+- Motor drivers
+- Power distribution
+- Battery / energy storage
+- Voltage regulators
+- Emergency-stop hardware
+- Sensor interfaces
+- Wiring junctions
+- Future expansion electronics
+
+Individual electronics modules should be removable without dismantling the full robot.
+
+## 8. Laptop Deck
+
+The top structure must support the **ASUS Zephyrus G14 with the lid closed**.
+
+Requirements:
+
+- Stable flat support
+- Retention against acceleration/braking
+- Ventilation clearance
+- Access to USB/Ethernet/power ports
+- Cable strain relief
+- Quick removal for normal laptop use
+
+## 9. Removable Sensor Mounts
+
+Use separate brackets for:
+
+- OAK-D Lite
+- ToF sensors
+- Radar
+- IMU where appropriate
+
+Sensor mounts should allow adjustment where useful and must not obstruct the sensor field of view.
+
+## 10. Cable Routing
+
+The chassis should include intentional wiring paths:
+
+- Cable channels / pass-throughs
+- Strain-relief points
+- Clearance from wheels and other moving parts
+- Separation of high-current motor wiring from sensitive sensor wiring where practical
+- No cables crossing service fasteners
+- No sharp printed edges contacting wires
+
+## 11. Accessibility & Serviceability
+
+The design should allow independent removal of:
+
+- Motor
+- Wheel
+- Motor mount
+- Sensor module
+- Laptop
+- Battery
+- Electronics tray
+
+Do not create assemblies where a required screw or nut becomes inaccessible after another component is installed.
+
+## 12. Printability
+
+### Prototype
+
+- **Material:** PLA
+- Purpose: fit checks, assembly validation, cable routing, and geometry iteration
+
+### Final Printed Structure
+
+- **Target material:** PA12 / PA612 carbon-fiber-reinforced nylon
+- **Nominal chassis thickness target:** ~5 mm, adjusted locally according to load
+- Hardened nozzle required for abrasive CF-filled filament
+
+Part orientation should consider both printability and load direction.
+
+## 13. Weight Reduction
+
+Perforations and pockets are allowed only where they do not compromise:
+
+- Motor-mount stiffness
+- Chassis joints
+- Battery support
+- Electronics mounting
+- Impact resistance
+
+Structural ribs are preferred over random material removal.
+
+---
+
+# Safety Requirements
+
+The finished robot should include:
+
+- Physical emergency stop
+- Software emergency stop
+- Motor-command watchdog / timeout
+- Defined startup state
+- Defined communication-loss behavior
+- Battery voltage monitoring
+- Current monitoring where practical
+- Safe regenerative-voltage limits
+- Sensor-loss fallback behavior
+- Indoor speed limits during early testing
+
+Emergency obstacle response should use the fastest reliable sensor information available rather than depending only on neural-network object classification.
+
+---
+
+# Software Stack
+
+## Primary Environment
+
+- **ROS 2 Jazzy**
+- Linux
+- **Gazebo Harmonic**
+- NVIDIA Isaac Sim when useful and sufficient GPU resources are available
+
+Planned ROS 2 modules include:
+
+- Hardware interface
+- Encoder acquisition
+- Wheel odometry
+- IMU fusion
+- OAK-D perception
+- ToF interface
+- Radar interface
+- VSLAM / localization
+- Navigation
+- Emergency braking
+- Regenerative-braking telemetry
+- Diagnostics
+- Data logging
+
+Simulation is used to accelerate development, but physical testing remains the source of truth for braking, regeneration, thermal behavior, and structural performance.
+
+---
+
+# Current BOM
+
+| Component | Qty | Status / Notes |
+|---|---:|---|
+| Pololu 37D 20:1 gearmotor with encoder | 4 | Selected; exact SKU must match purchased CAD |
+| Wheels | 4 | Geometry must match supplied CAD |
+| Cytron bidirectional dual-channel motor driver | 2 | Selected architecture; reverse-current behavior must be verified |
+| Teensy 4.1 | 1 | Selected |
+| ASUS Zephyrus G14 | 1 | Existing high-level compute |
+| OAK-D Lite | 1 | Selected |
+| ToF distance sensors | 8 | Planned — 2 per side |
+| TI IWR6843AOPEVM | 1 | Preferred initial front radar |
+| IMU | 1 | Final model TBD |
+| Battery / energy-storage system | 1 | Final specification pending regen validation |
+| Power distribution / protection | 1 set | Required |
+| Emergency-stop hardware | 1 set | Required |
+| M2.5 screws | — | Standard project fastener |
+| M2.5 heat-set inserts | — | Serviceable printed joints |
+| PLA | — | Prototype parts |
+| PA12 / PA612 CF nylon | — | Final structural parts |
+| Hardened nozzle | 1 | Required for CF-filled nylon |
+| Wiring / connectors / strain relief | — | Required |
+
+---
+
+# Budget
+
+**Target total project budget: approximately $1,700**
+
+Approximately **$724** had been spent through the AMP Lab as of the latest budget update.
+
+Current cost-control choices include:
+
+- Using the existing Zephyrus G14 instead of immediately buying dedicated compute
+- OAK-D Lite instead of the older RealSense + LiDAR architecture
+- One initial front radar instead of four radar units
+- ToF sensors for inexpensive near-field perimeter coverage
+- In-house printed chassis and mounts
+- Replaceable mechanical modules so revisions do not require rebuilding the full robot
+
+---
+
+# Milestones
+
+## Milestone 1 — Mechanical Platform
+
+**Current focus**
+
+- [ ] Complete chassis CAD
+- [ ] Finalize modular chassis sections
+- [ ] Verify every purchased component against supplied CAD
+- [ ] Complete removable motor mounts
+- [ ] Complete wheel interfaces/adapters
+- [ ] Finalize M2.5 fastening strategy
+- [ ] Finalize laptop top deck
+- [ ] Finalize sensor positions
+- [ ] Reserve electronics space
+- [ ] Add cable-routing features
+- [ ] Print and assemble PLA prototype
+- [ ] Document the physical prototype
+
+## Milestone 2 — Drivetrain + Electronics
+
+- [ ] Integrate motors and encoders
+- [ ] Wire motor drivers
+- [ ] Implement Teensy firmware
+- [ ] Integrate battery and power distribution
+- [ ] Closed-loop wheel control
+- [ ] Emergency-stop system
+- [ ] Encoder + IMU odometry
+- [ ] Regenerative-braking instrumentation
+- [ ] Initial regen testing
+- [ ] OAK-D / ToF / radar integration
+
+## Milestone 3 — Autonomy + Demonstration
+
+- [ ] ROS 2 hardware interfaces
+- [ ] VSLAM / localization
+- [ ] Sensor fusion
+- [ ] Obstacle detection
+- [ ] Emergency deceleration
+- [ ] Autonomous navigation
+- [ ] Regenerative-energy logging
+- [ ] Gazebo / Isaac Sim digital twin
+- [ ] Final integrated demonstration
+
+---
+
+# AI-Assisted CAD Rules
+
+When AI is used to help create the mechanical design:
+
+1. Read the requirements file first.
+2. Inspect every supplied STEP/CAD model, drawing, dimension sheet, image, and reference before generating geometry.
+3. Treat purchased-component geometry as fixed.
+4. Never invent a mounting dimension that exists in the supplied files.
+5. Use reference images for design intent, not blind copying.
+6. Improve geometry where required for strength, printability, accessibility, or serviceability.
+7. Use M2.5 screws and heat-set inserts as the default fastening strategy.
+8. Keep motor mounts, sensor mounts, and electronics modules removable.
+9. Split the chassis into printable sections.
+10. Reinforce motor and wheel load paths.
+11. Keep ToF, camera, and radar fields of view clear of wheels and bodywork.
+12. Include cable routing and strain relief.
+13. Preserve access to every service fastener.
+14. Check tool access for every screw.
+15. Check connector access for every electrical component.
+16. Verify wheel clearance through the full rotating envelope.
+17. Verify a realistic assembly sequence.
+18. Avoid decorative geometry that reduces serviceability.
+19. Use parametric dimensions / user parameters for repeated tolerances.
+20. Complete functional assembly geometry before cosmetic refinement.
+
+---
+
+# Validation Plan
+
+## Mechanical
+
+- Chassis deflection under full payload
+- Motor-mount deflection
+- Wheel alignment
+- Fastener loosening
+- Chassis-joint durability
+- Thermal behavior of printed mounts
+
+## Drivetrain / Regen
+
+- Wheel RPM vs command
+- Motor current
+- Closed-loop response
+- Braking distance
+- Generated voltage/current
+- Recovered energy per stop
+- Battery/DC-bus voltage rise
+- Repeatability
+
+## Perception
+
+- ToF blind spots and wheel occlusion
+- Stereo depth accuracy
+- VSLAM stability
+- Radar range / velocity quality
+- Sensor latency
+
+## Autonomy
+
+- Localization drift
+- Obstacle-detection latency
+- Emergency-stop latency
+- Navigation success rate
+- Failure behavior after sensor or communication loss
+
+---
+
+# Repository Structure
+
+```text
+Mini-Tesla/
+├── README.md
+├── cad/
+│   ├── purchased_components/
+│   ├── chassis/
+│   ├── motor_mounts/
+│   ├── wheel_adapters/
+│   ├── sensor_mounts/
+│   └── exports/
+├── firmware/
+│   └── teensy/
+├── ros2_ws/
+│   └── src/
+├── simulation/
+│   ├── gazebo/
+│   └── isaac_sim/
+├── electronics/
+│   ├── wiring/
+│   └── power/
+├── docs/
+│   ├── mechanical/
+│   ├── regen/
+│   ├── test_logs/
+│   └── photos/
+└── bom/
+```
+
+For each major hardware revision, document:
+
+- CAD screenshot
+- What changed
+- Why it changed
+- Physical prototype photo when available
+- Test result when experimentally validated
+
+---
+
+# Current Development Log — October 2026
+
+- Mechanical architecture moved away from the older mecanum / custom transmission concept.
+- Current robot uses a conventional four-wheel chassis architecture.
+- Pololu 37D 20:1 encoder gearmotors are being used for the current drivetrain design.
+- Motor mounts are separate replaceable modules.
+- The chassis is being split into printable structural sections.
+- PLA is being used for fit and prototype validation.
+- PA12 / PA612 CF nylon is planned for stronger final printed parts.
+- M2.5 screws and heat-set inserts are the standard fastening system.
+- CAD is being designed around the actual supplied component geometry.
+- The top deck must support the ASUS Zephyrus G14.
+- OAK-D Lite is the current stereo/depth camera choice.
+- Current ToF concept uses two sensors per side.
+- ToF placement is being designed so wheels do not block the sensor field of view.
+- TI IWR6843AOPEVM is the preferred initial front radar.
+- Teensy 4.1 remains the low-level controller.
+- Regenerative braking remains a core project experiment.
+- Current priority is completing Milestone 1 mechanical CAD and the physical chassis prototype.
+
+---
+
+# Engineering Principles
+
+- **Build around real hardware, not guessed dimensions.**
+- **Do not claim performance before measuring it.**
+- **Make important modules replaceable.**
+- **Design for assembly and repair, not just appearance.**
+- **Keep safety-critical control independent of slow perception pipelines.**
+- **Use simulation to accelerate development, not replace physical validation.**
+- **Treat regenerative braking as a complete power-electronics problem, not only a motor-control feature.**
+
+---
+
+# Useful Links
+
+- [ROS 2 Jazzy Documentation](https://docs.ros.org/en/jazzy/)
 - [Nav2 Documentation](https://docs.nav2.org/)
+- [Gazebo Harmonic Documentation](https://gazebosim.org/docs/harmonic/)
 - [NVIDIA Isaac Sim](https://developer.nvidia.com/isaac-sim)
-- [micro-ROS for Teensy](https://micro.ros.org/)
-- [SimpleFOC Library](https://simplefoc.com/)
-- [RTAB-Map ROS 2](https://github.com/introlab/rtabmap_ros)
+- [Teensy 4.1 — PJRC](https://www.pjrc.com/store/teensy41.html)
+- [Luxonis OAK Documentation](https://docs.luxonis.com/)
+- [TI IWR6843AOPEVM](https://www.ti.com/tool/IWR6843AOPEVM)
+- [Pololu 37D Gearmotors](https://www.pololu.com/category/116/37d-mm-metal-gearmotors)
 
-## Log
+---
 
-### Week of April 21, 2026
-- Project proposal drafted and submitted
-- Component decisions finalized: Pololu 37D bare motor, Cytron MDD10A, Teensy 4.1, RealSense D435 + RPLIDAR A1
-- Decided against OAK-D Lite (redundant with RealSense + LiDAR combo)
-- Decided against AK60-6 actuators (over budget at $880 for 4 wheels)
-- AEB architecture decided: depth threshold on raw RealSense frames, dedicated high-priority serial path to Teensy — no image recognition in the braking loop
-- Three-semester timeline established with three milestones (May 13, June 13, Dec 16)
-- PowerPoint proposal finalized and submitted
-- **Next steps**: Begin chassis CAD, finalize BOM pricing, place first component orders
+## Current Configuration Summary
+
+| System | Current Choice |
+|---|---|
+| Platform | Four-wheel autonomous robotic EV |
+| Motors | Pololu 37D 20:1 gearmotors + encoders |
+| Low-Level Control | Teensy 4.1 |
+| High-Level Compute | ASUS Zephyrus G14 |
+| Stereo / Depth | OAK-D Lite |
+| Near-Field Sensing | 8× ToF |
+| Radar | TI IWR6843AOPEVM — front initially |
+| State Estimation | Wheel odometry + IMU |
+| Software | ROS 2 Jazzy |
+| Simulation | Gazebo Harmonic + Isaac Sim |
+| Prototype Material | PLA |
+| Final Material Target | PA12 / PA612 CF nylon |
+| Primary Fastener | M2.5 |
+| Current Phase | Mechanical CAD / Milestone 1 |
