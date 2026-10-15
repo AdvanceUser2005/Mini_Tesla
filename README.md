@@ -3,7 +3,7 @@
 > **A miniature autonomous electric vehicle built to explore perception, navigation, rapid obstacle response, and regenerative braking.**
 
 <p align="center">
-  <img src="photos/prototype-front.jpg" alt="Mini Tesla printed prototype with mecanum wheels, laptop deck and Velodyne LiDAR" width="850">
+  <img src="hero.png" alt="Mini Tesla printed prototype with mecanum wheels, laptop deck and Velodyne LiDAR" width="850">
 </p>
 
 <p align="center"><i>The printed Mini Tesla prototype: mecanum drivetrain, laptop deck, phone mount and a Velodyne LiDAR.</i></p>
@@ -42,7 +42,7 @@ The chassis CAD is complete and has passed its automated fit, interference and t
 <p align="center"><i>Printed prototype, side view.</i></p>
 
 <p align="center">
-  <img src="hero.png" alt="10C4I FINAL rev 2 chassis, CAD render" width="850">
+  <img src="old2.png" alt="10C4I FINAL rev 2 chassis, CAD render" width="850">
 </p>
 
 <p align="center"><i>10C4I FINAL rev 2: current chassis CAD assembly with laptop deck, ToF pods, radar and OAK-D mount.</i></p>
@@ -197,7 +197,8 @@ Integrate localization, perception, navigation, obstacle response, regenerative-
 | [`CAD Files/`](CAD%20Files/README.md) | 10C4I chassis design write-up, preview render and STEP assembly |
 | [`ros_ws/src/mini_tesla_description/`](ros_ws/src/mini_tesla_description/README.md) | ROS 2 package: URDF/xacro, meshes, Gazebo Harmonic sim, launch files |
 | `photos/` | Photos of the printed prototype |
-| `hero.png`, `old.png` | CAD renders (FINAL rev 2 and the earlier v2 iteration) |
+| `hero.png` | Main README photo: the printed prototype with the LiDAR |
+| `old.png`, `old2.png` | CAD renders (earlier v2 iteration and FINAL rev 2) |
 
 Quick start for the simulation (ROS 2 Jazzy + Gazebo Harmonic):
 
