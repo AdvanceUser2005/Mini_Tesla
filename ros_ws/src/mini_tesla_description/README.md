@@ -7,8 +7,8 @@ URDF/xacro, meshes and a Gazebo Harmonic simulation of the **Mini Tesla 10C4I** 
 ```bash
 sudo apt install ros-jazzy-ros-gz ros-jazzy-xacro ros-jazzy-joint-state-publisher-gui \
                  ros-jazzy-teleop-twist-keyboard
-cd ~/ros2_ws/src && unzip mini_tesla_description.zip
-cd ~/ros2_ws && colcon build --packages-select mini_tesla_description && source install/setup.bash
+# from the repository root (the package lives in ros_ws/src/)
+cd ros_ws && colcon build --packages-select mini_tesla_description && source install/setup.bash
 ```
 
 ## Run

@@ -3,8 +3,10 @@
 > **A miniature autonomous electric vehicle built to explore perception, navigation, rapid obstacle response, and regenerative braking.**
 
 <p align="center">
-  <img src="hero.png" alt="Mini Tesla" width="850">
+  <img src="photos/prototype-front.jpg" alt="Mini Tesla printed prototype with mecanum wheels, laptop deck and Velodyne LiDAR" width="850">
 </p>
+
+<p align="center"><i>The printed Mini Tesla prototype: mecanum drivetrain, laptop deck, phone mount and a Velodyne LiDAR.</i></p>
 
 ## Members
 
@@ -18,9 +20,44 @@ mailtodaksh@vt.edu
 
 ## Current Status
 
-🚧 **In Progress — Mechanical CAD & Chassis Development**
+🚧 **In Progress — CAD complete (FINAL rev 2), chassis printed, electronics and simulation underway**
 
-The current focus is completing the physical platform: chassis, motor mounting, wheel integration, sensor placement, electronics packaging, and preparation for the first assembled prototype.
+The chassis CAD is complete and has passed its automated fit, interference and tool-path checks. A printed prototype is built and carrying the laptop deck, and the current focus is drivetrain and electronics bring-up while the robot is modelled in simulation (Gazebo Harmonic, ROS 2 Jazzy) in parallel.
+
+| Area | Status |
+|---|---|
+| Mechanical CAD | Done: FINAL rev 2, see [CAD Files](CAD%20Files/README.md) |
+| Gazebo simulation | Started: URDF, sensors, mecanum drive and test arena in [`ros_ws`](ros_ws/src/mini_tesla_description/README.md) |
+| Printing / assembly | In progress: PLA prototype printed on a Prusa MK4S; tolerance coupon and final material still open |
+| Firmware / autonomy | Not started |
+
+---
+
+## Gallery
+
+<p align="center">
+  <img src="photos/prototype-side.jpg" alt="Side view of the printed Mini Tesla prototype" width="500">
+</p>
+
+<p align="center"><i>Printed prototype, side view.</i></p>
+
+<p align="center">
+  <img src="hero.png" alt="10C4I FINAL rev 2 chassis, CAD render" width="850">
+</p>
+
+<p align="center"><i>10C4I FINAL rev 2: current chassis CAD assembly with laptop deck, ToF pods, radar and OAK-D mount.</i></p>
+
+<p align="center">
+  <img src="CAD%20Files/10C4I_FINAL_rev2_preview.png" alt="10C4I FINAL rev 2: isometric, side, top and exploded views" width="850">
+</p>
+
+<p align="center"><i>FINAL rev 2: isometric, side, top and exploded views.</i></p>
+
+<p align="center">
+  <img src="old.png" alt="Earlier 10C4I v2 chassis assembly in Fusion" width="850">
+</p>
+
+<p align="center"><i>Earlier iteration (v2): three-section X-ribbed chassis before the laptop deck and side extensions. The full design history is in the <a href="CAD%20Files/README.md">CAD write-up</a>.</i></p>
 
 ---
 
@@ -35,6 +72,8 @@ The robot is being built to:
 - detect nearby obstacles using **stereo depth, ToF sensors, and radar**
 - react rapidly to unexpected objects in its path
 - perform higher-level **object and person detection**
+- explore unknown spaces with **Active SLAM** and build **semantic maps** of what it sees
+- **predict the trajectory of moving objects** (for example a thrown football) and brake or evade before impact, using predictive motion planning / MPC
 - measure energy recovered during **regenerative braking**
 - operate in both **manual and autonomous modes**
 - validate algorithms in **Gazebo and NVIDIA Isaac Sim**
@@ -63,9 +102,11 @@ Mini Tesla brings several areas of engineering together in one physical platform
 
 ## Current Tasks
 
-- [ ] Complete full mechanical CAD assembly
-- [ ] Finalize modular chassis and drivetrain mounting
-- [ ] Finalize camera, ToF, radar, and electronics placement
+- [x] Complete full mechanical CAD assembly
+- [x] Finalize modular chassis and drivetrain mounting
+- [x] Finalize camera, ToF, radar, and electronics placement
+- [x] Build the Gazebo model (URDF, sensors, mecanum drive, test arena)
+- [ ] Print the tolerance coupon and pick the final material
 - [ ] Print and assemble the first complete chassis prototype
 - [ ] Integrate motors, encoders, motor drivers, and Teensy 4.1
 - [ ] Bring up low-level motion control
@@ -80,22 +121,22 @@ Mini Tesla brings several areas of engineering together in one physical platform
 ## Key Design Decisions
 
 **Mecanum Drivetrain**  
-The robot uses four independently driven mecanum wheels with **Pololu 37D 20:1 gearmotors with encoders**, allowing forward, lateral, diagonal, and rotational motion while retaining encoder feedback for closed-loop control and odometry.
+The robot uses four independently driven mecanum wheels with **Pololu #4691 19:1 37D gearmotors with encoders** driving REV 75 mm mecanum wheels, allowing forward, lateral, diagonal, and rotational motion while retaining encoder feedback for closed-loop control and odometry.
 
 **Regenerative Braking**  
 Regenerative braking is one of the project's main experiments. The drivetrain and power electronics are being designed so braking events can be measured for recovered voltage, current, energy, stopping distance, and response time.
 
 **Laptop-Based Compute**  
-A sufficiently capable laptop is used as the primary onboard compute platform for ROS 2, perception, navigation, and higher-level autonomy. The design is not tied to a specific laptop model.
+A sufficiently capable laptop is used as the primary onboard compute platform for ROS 2, perception, navigation, and higher-level autonomy. The software is not tied to a specific laptop model; the current deck is sized for an ASUS Zephyrus G14 (311 × 220 × 16.3 mm).
 
 **Teensy 4.1 Low-Level Controller**  
 The Teensy handles time-sensitive motor, encoder, and actuator control while the laptop handles higher-level autonomy.
 
 **Multi-Sensor Perception**  
-The perception stack combines an **OAK-D Lite**, close-range **Time-of-Flight sensors**, an **IMU**, wheel encoders, and a forward-facing **TI mmWave radar**. Each sensor covers a different part of the perception problem instead of relying on a single sensor.
+The perception stack combines an **OAK-D Lite**, close-range **Time-of-Flight sensors**, an **IMU**, wheel encoders, and a forward-facing **TI mmWave radar**. Each sensor covers a different part of the perception problem instead of relying on a single sensor. The current printed prototype also carries a **Velodyne LiDAR** on a printed mast and an **iPhone Pro** in the front mount, which is being investigated as an RGB-D (camera + LiDAR) sensor streamed into ROS 2.
 
 **Modular Chassis**  
-The chassis is designed as a serviceable, multi-part 3D-printed structure with removable motor and sensor modules. Early prototypes use PLA, with stronger engineering filament planned for later revisions.
+The chassis is designed as a serviceable, multi-part 3D-printed structure (three bolted sections that fit a Prusa MK4S bed, plus side extensions and a two-half laptop deck) with removable motor and sensor modules. Early prototypes use PLA, with PETG or PA612-CF planned for later revisions.
 
 ---
 
@@ -103,14 +144,15 @@ The chassis is designed as a serviceable, multi-part 3D-printed structure with r
 
 | Component | Role | Qty |
 |---|---|---:|
-| Pololu 37D 20:1 Gearmotor + Encoder | Drivetrain | 4 |
+| Pololu #4691 19:1 37D Gearmotor + Encoder | Drivetrain | 4 |
+| REV 75 mm Mecanum Wheel | Drivetrain | 4 |
 | Cytron Dual-Channel Motor Driver | Motor Control | 2 |
 | Teensy 4.1 | Low-Level Control | 1 |
 | OAK-D Lite | Stereo Vision / Depth | 1 |
 | Time-of-Flight Sensors | Close-Range Obstacle Detection | 8 |
 | TI IWR6843AOPEVM | Forward mmWave Radar | 1 |
 | IMU | Motion Estimation | 1 |
-| Battery + Power Electronics | Power System | 1 set |
+| 6S 5200 mAh Battery + Power Electronics | Power System | 1 set |
 | Custom 3D-Printed Chassis | Structure | 1 |
 
 **Project budget target:** approximately **$1,700** for the complete platform.
@@ -148,6 +190,24 @@ Integrate localization, perception, navigation, obstacle response, regenerative-
 
 ---
 
+## Repository Layout
+
+| Path | Contents |
+|---|---|
+| [`CAD Files/`](CAD%20Files/README.md) | 10C4I chassis design write-up, preview render and STEP assembly |
+| [`ros_ws/src/mini_tesla_description/`](ros_ws/src/mini_tesla_description/README.md) | ROS 2 package: URDF/xacro, meshes, Gazebo Harmonic sim, launch files |
+| `photos/` | Photos of the printed prototype |
+| `hero.png`, `old.png` | CAD renders (FINAL rev 2 and the earlier v2 iteration) |
+
+Quick start for the simulation (ROS 2 Jazzy + Gazebo Harmonic):
+
+```bash
+cd ros_ws && colcon build --packages-select mini_tesla_description && source install/setup.bash
+ros2 launch mini_tesla_description sim.launch.py
+```
+
+---
+
 ## Useful Links
 
 - [Project Portfolio](https://advanceuser2005.github.io/)
@@ -164,6 +224,7 @@ Integrate localization, perception, navigation, obstacle response, regenerative-
 
 ### October 2026
 
+- Printed PLA prototype assembled (Prusa MK4S) with mecanum wheels, laptop deck, phone mount and a Velodyne LiDAR; photos added to the repo.
 - Current Mini Tesla architecture finalized around a four-wheel mecanum autonomous EV platform.
 - Mechanical CAD is being redesigned around the actual purchased components and their supplied geometry.
 - Chassis architecture moved toward a modular, multi-part printed design for easier manufacturing and service.
@@ -172,7 +233,9 @@ Integrate localization, perception, navigation, obstacle response, regenerative-
 - Laptop-based onboard compute selected for the current autonomy stack.
 - Teensy 4.1 selected for low-level real-time control.
 - Regenerative braking remains a core experimental objective of the platform.
-- Current priority: **finish the complete mechanical assembly and move into physical integration.**
+- 10C4I FINAL rev 2 completed (Oct 5): side extensions added so the ToF and radar fields of view clear the wheels; CAD passed interference, motion-path, tool-path and printability checks.
+- Gazebo Harmonic simulation started (Oct 6): URDF from the CAD, 8 ToF, radar, OAK-D and IMU models, mecanum drive and a 6 × 6 m test arena.
+- Current priority: **print the tolerance coupon and first chassis prototype, and move into physical integration.**
 
 ---
 
