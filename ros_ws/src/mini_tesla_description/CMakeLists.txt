@@ -6,7 +6,7 @@ find_package(ament_cmake REQUIRED)
 install(DIRECTORY urdf meshes launch config worlds
   DESTINATION share/${PROJECT_NAME})
 
-install(PROGRAMS scripts/tof_to_range.py
+install(PROGRAMS scripts/tof_to_range.py scripts/xbox_teleop.py
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

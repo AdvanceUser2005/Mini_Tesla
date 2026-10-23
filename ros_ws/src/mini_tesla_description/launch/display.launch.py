@@ -1,6 +1,6 @@
 """View the 10C4I model in RViz with joint sliders (no simulation).
 
-ros2 launch mini_tesla_description display.launch.py side_radars:=true
+ros2 launch mini_tesla_description display.launch.py laptop:=false
 """
 import os
 from ament_index_python.packages import get_package_share_directory
@@ -15,11 +15,9 @@ def generate_launch_description():
     pkg = get_package_share_directory("mini_tesla_description")
     xacro_file = os.path.join(pkg, "urdf", "mini_tesla.urdf.xacro")
     args = [DeclareLaunchArgument(n, default_value=d) for n, d in
-            (("side_radars", "false"), ("rear_radar", "false"), ("laptop", "true"))]
+            (("laptop", "true"),)]
     robot_description = ParameterValue(
         Command(["xacro ", xacro_file,
-                 " side_radars:=", LaunchConfiguration("side_radars"),
-                 " rear_radar:=", LaunchConfiguration("rear_radar"),
                  " laptop:=", LaunchConfiguration("laptop")]),
         value_type=str)
     return LaunchDescription(args + [

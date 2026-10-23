@@ -1,5 +1,4 @@
 # ros_gz_bridge config for the 10C4I (Gazebo Harmonic <-> ROS 2 Jazzy).
-# Side/rear radar entries are harmless when those radars are disabled (no publisher).
 - ros_topic_name: "/clock"
   gz_topic_name: "/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
@@ -30,6 +29,30 @@
   gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
 
+- ros_topic_name: "/tof/front/scan"
+  gz_topic_name: "/tof/front/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/tof/rear/scan"
+  gz_topic_name: "/tof/rear/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/tof/left/scan"
+  gz_topic_name: "/tof/left/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/tof/right/scan"
+  gz_topic_name: "/tof/right/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+
 - ros_topic_name: "/tof/front_left/scan"
   gz_topic_name: "/tof/front_left/scan"
   ros_type_name: "sensor_msgs/msg/LaserScan"
@@ -54,78 +77,42 @@
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/tof/left_front/scan"
-  gz_topic_name: "/tof/left_front/scan"
-  ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "gz.msgs.LaserScan"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/tof/left_rear/scan"
-  gz_topic_name: "/tof/left_rear/scan"
-  ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "gz.msgs.LaserScan"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/tof/right_front/scan"
-  gz_topic_name: "/tof/right_front/scan"
-  ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "gz.msgs.LaserScan"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/tof/right_rear/scan"
-  gz_topic_name: "/tof/right_rear/scan"
-  ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "gz.msgs.LaserScan"
-  direction: GZ_TO_ROS
-
 - ros_topic_name: "/radar/front/points"
   gz_topic_name: "/radar/front/scan/points"
   ros_type_name: "sensor_msgs/msg/PointCloud2"
   gz_type_name: "gz.msgs.PointCloudPacked"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/radar/left/points"
-  gz_topic_name: "/radar/left/scan/points"
-  ros_type_name: "sensor_msgs/msg/PointCloud2"
-  gz_type_name: "gz.msgs.PointCloudPacked"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/radar/right/points"
-  gz_topic_name: "/radar/right/scan/points"
-  ros_type_name: "sensor_msgs/msg/PointCloud2"
-  gz_type_name: "gz.msgs.PointCloudPacked"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/radar/rear/points"
-  gz_topic_name: "/radar/rear/scan/points"
-  ros_type_name: "sensor_msgs/msg/PointCloud2"
-  gz_type_name: "gz.msgs.PointCloudPacked"
-  direction: GZ_TO_ROS
-
-- ros_topic_name: "/oak/rgb/image_raw"
-  gz_topic_name: "/oak/rgbd/image"
+- ros_topic_name: "/iphone/rgb/image_raw"
+  gz_topic_name: "/iphone/rgbd/image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/oak/rgb/camera_info"
-  gz_topic_name: "/oak/rgbd/camera_info"
+- ros_topic_name: "/iphone/rgb/camera_info"
+  gz_topic_name: "/iphone/rgbd/camera_info"
   ros_type_name: "sensor_msgs/msg/CameraInfo"
   gz_type_name: "gz.msgs.CameraInfo"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/oak/depth/image_raw"
-  gz_topic_name: "/oak/rgbd/depth_image"
+- ros_topic_name: "/iphone/depth/image_raw"
+  gz_topic_name: "/iphone/rgbd/depth_image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-# /oak/points is NOT bridged: gz builds /oak/rgbd/points with x forward / z up but stamps it with the
+# /iphone/points is NOT bridged: gz builds /iphone/rgbd/points with x forward / z up but stamps it with the
 # optical frame (z forward), so it shows up rotated 90 deg. sim.launch.py rebuilds it from the depth image
-# with depth_image_proc instead, which is also what the real OAK-D pipeline does.
+# with depth_image_proc instead, which also matches how a real RGB-D camera pipeline works.
 
-- ros_topic_name: "/oak/imu"
-  gz_topic_name: "/oak/imu"
+- ros_topic_name: "/iphone/imu"
+  gz_topic_name: "/iphone/imu"
   ros_type_name: "sensor_msgs/msg/Imu"
   gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/velodyne_points"
+  gz_topic_name: "/velodyne/scan/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
   direction: GZ_TO_ROS

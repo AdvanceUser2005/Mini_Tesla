@@ -11,8 +11,8 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import LaserScan, Range
 
-TOFS = ["front_left", "front_right", "rear_left", "rear_right",
-        "left_front", "left_rear", "right_front", "right_rear"]
+TOFS = ["front", "rear", "left", "right",
+        "front_left", "front_right", "rear_left", "rear_right"]
 
 
 class TofToRange(Node):

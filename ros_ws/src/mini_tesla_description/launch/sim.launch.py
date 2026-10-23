@@ -1,7 +1,7 @@
 """Gazebo Harmonic simulation of the Mini Tesla 10C4I.
 
 ros2 launch mini_tesla_description sim.launch.py
-  drive:=mecanum|planar  side_radars:=false|true  rear_radar:=false|true  laptop:=true|false
+  drive:=mecanum|planar  laptop:=true|false  joy:=true|false  (Xbox controller)
   world:=<path to .sdf>  rviz:=true|false  x:= y:= yaw:=  (spawn pose)
 """
 import os
@@ -21,9 +21,8 @@ def generate_launch_description():
 
     args = [
         DeclareLaunchArgument("drive", default_value="mecanum", description="mecanum | planar"),
-        DeclareLaunchArgument("side_radars", default_value="false"),
-        DeclareLaunchArgument("rear_radar", default_value="false"),
         DeclareLaunchArgument("laptop", default_value="true"),
+        DeclareLaunchArgument("joy", default_value="true", description="start the Xbox controller teleop"),
         DeclareLaunchArgument("world", default_value=os.path.join(pkg, "worlds", "test_arena.sdf")),
         DeclareLaunchArgument("rviz", default_value="true"),
         DeclareLaunchArgument("x", default_value="0.0"),
@@ -34,8 +33,6 @@ def generate_launch_description():
     robot_description = ParameterValue(
         Command(["xacro ", xacro_file,
                  " drive:=", LaunchConfiguration("drive"),
-                 " side_radars:=", LaunchConfiguration("side_radars"),
-                 " rear_radar:=", LaunchConfiguration("rear_radar"),
                  " laptop:=", LaunchConfiguration("laptop")]),
         value_type=str)
 
@@ -61,16 +58,21 @@ def generate_launch_description():
     tof = Node(package="mini_tesla_description", executable="tof_to_range.py",
                parameters=[{"use_sim_time": True}], output="screen")
 
-    # colored point cloud in oak_optical_frame from the (already registered) depth + rgb images
-    oak_points = Node(package="depth_image_proc", executable="point_cloud_xyzrgb_node", name="oak_points",
+    # colored point cloud in iphone_optical_frame from the (already registered) depth + rgb images
+    iphone_points = Node(package="depth_image_proc", executable="point_cloud_xyzrgb_node", name="iphone_points",
                       parameters=[{"use_sim_time": True}], output="screen",
-                      remappings=[("rgb/image_rect_color", "/oak/rgb/image_raw"),
-                                  ("rgb/camera_info", "/oak/rgb/camera_info"),
-                                  ("depth_registered/image_rect", "/oak/depth/image_raw"),
-                                  ("points", "/oak/points")])
+                      remappings=[("rgb/image_rect_color", "/iphone/rgb/image_raw"),
+                                  ("rgb/camera_info", "/iphone/rgb/camera_info"),
+                                  ("depth_registered/image_rect", "/iphone/depth/image_raw"),
+                                  ("points", "/iphone/points")])
+
+    teleop = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg, "launch", "teleop_xbox.launch.py")),
+        launch_arguments={"use_sim_time": "true"}.items(),
+        condition=IfCondition(LaunchConfiguration("joy")))
 
     rviz =Node(package="rviz2", executable="rviz2", condition=IfCondition(LaunchConfiguration("rviz")),
                 arguments=["-d", os.path.join(pkg, "config", "mini_tesla.rviz")],
                 parameters=[{"use_sim_time": True}])
 
-    return LaunchDescription(args + [gz, rsp, spawn, bridge, tof, oak_points, rviz])
+    return LaunchDescription(args + [gz, rsp, spawn, bridge, tof, iphone_points, teleop, rviz])

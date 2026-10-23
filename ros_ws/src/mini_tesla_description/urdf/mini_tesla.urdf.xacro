@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-  Mini Tesla 10C4I - indoor mecanum robot (FINAL rev 2 chassis)
+  Mini Tesla 10C4I - indoor mecanum robot (rev3 chassis)
   ROS 2 Jazzy + Gazebo Harmonic.
 
   Frames: base_footprint on the floor under the robot centre; base_link = chassis underside centre
@@ -9,15 +9,11 @@
   xacro args:
     drive        mecanum (default): wheels driven by gz MecanumDrive with 45-degree friction
                  planar: ideal holonomic base (VelocityControl), wheels slide; use if contact tuning bites
-    side_radars  false (default) / true   radars on both side extensions
-    rear_radar   false (default) / true
     laptop       true (default) / false   ASUS G14 on the deck (1.5 kg)
 -->
 <robot name="mini_tesla" xmlns:xacro="http://www.ros.org/wiki/xacro" xmlns:gz="http://gazebosim.org/schema">
 
   <xacro:arg name="drive" default="mecanum"/>
-  <xacro:arg name="side_radars" default="false"/>
-  <xacro:arg name="rear_radar" default="false"/>
   <xacro:arg name="laptop" default="true"/>
 
   <xacro:property name="pkg" value="$(find mini_tesla_description)"/>
@@ -40,7 +36,6 @@
   <xacro:property name="m_battery" value="0.80"/>
   <xacro:property name="m_laptop" value="1.50"/>
   <xacro:property name="m_wheel" value="0.12"/>          <!-- REV 75 mm mecanum + printed adapter -->
-  <xacro:property name="m_camera" value="0.061"/>
 
   <!-- motor: Pololu 37D 19:1 -> ~530 rpm no-load = 55 rad/s -->
   <xacro:property name="wheel_vel_limit" value="55.0"/>
